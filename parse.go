@@ -85,16 +85,14 @@ func (p *Parser) generateOperator(op string, field ...interface{}) (query map[st
 	value *[]interface{}) {
 	value = &[]interface{}{}
 	switch op {
-	case "$and":
-	case "$all":
+	case "$and", "$all":
 		query = map[string]interface{}{
 			"bool": map[string]interface{}{
 				"must": value,
 			},
 		}
 		break
-	case "$or":
-	case "$in":
+	case "$or", "$in":
 		query = map[string]interface{}{
 			"bool": map[string]interface{}{
 				"should": value,
@@ -175,7 +173,13 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 			}
 			if _, isOp := operators[k]; isOp {
 				qo, a := p.generateOperator(k, tempValue)
-				if list, isList := v.([]interface{}); isList {
+				if list, isList := v.([]gm.Filters); isList {
+					for _, listItem := range list {
+						for _, item := range p.iterate(listItem, tempValue) {
+							*a = append(*a, item)
+						}
+					}
+				} else if list, isList := v.([]interface{}); isList {
 					for _, listItem := range list {
 						for _, item := range p.iterate(listItem, tempValue) {
 							*a = append(*a, item)
