@@ -162,7 +162,17 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 		tempValue = temp[0]
 	}
 	queries = make([]interface{}, 0)
-	if q, ok := data.(gm.Filters); ok {
+	q, ok := data.(gm.Filters)
+	if !ok {
+		q, ok = data.(map[string]interface{})
+	}
+	if !ok {
+		qPtr, okPtr := data.(*map[string]interface{})
+		if okPtr {
+			q = *qPtr
+		}
+	}
+	if ok {
 		opMap := map[string]interface{}{}
 		for k, v := range q {
 			if qTemplate, ok := p.QueryTemplates[k]; ok && qTemplate == nil {
@@ -204,7 +214,9 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 			} else if k == "$exists" {
 				p.generateCondition(opMap, k, tempValue, v)
 				queries = append(queries, opMap)
-			} else if _, isMap := v.(*map[string]interface{}); isMap {
+			} else if _, isMap := v.(map[string]interface{}); isMap {
+				queries = append(queries, p.iterate(v, k)...)
+			} else if _, isMapPtr := v.(*map[string]interface{}); isMapPtr {
 				queries = append(queries, p.iterate(v, k)...)
 			} else {
 				templateQuery := p.addTemplate(k, queries, v)
