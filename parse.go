@@ -236,7 +236,7 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 	return
 }
 
-func (p *Parser) Parse(request gm.IRequest) (result dl.IParseResult) {
+func (p *Parser) Parse(request gm.IRequest, extra ...interface{}) (result dl.IParseResult) {
 	req := request.GetBaseRequest()
 	pResult := &ParseResult{}
 	// sort
