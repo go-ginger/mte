@@ -164,13 +164,18 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 	queries = make([]interface{}, 0)
 	q, ok := data.(gm.Filters)
 	if !ok {
-		q, ok = data.(map[string]interface{})
-	}
-	if !ok {
-		qPtr, okPtr := data.(*map[string]interface{})
-		if okPtr {
-			q = *qPtr
+		if fitersPtr, parsed := data.(*gm.Filters); parsed {
+			ok = true
+			q = *fitersPtr
+		} else if q, parsed = data.(map[string]interface{}); parsed {
+			ok = true
+		} else {
+			if qPtr, parsed := data.(*map[string]interface{}); parsed {
+				ok = true
+				q = *qPtr
+			}
 		}
+
 	}
 	if ok {
 		opMap := map[string]interface{}{}
@@ -217,6 +222,10 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 			} else if _, isMap := v.(map[string]interface{}); isMap {
 				queries = append(queries, p.iterate(v, k)...)
 			} else if _, isMapPtr := v.(*map[string]interface{}); isMapPtr {
+				queries = append(queries, p.iterate(v, k)...)
+			} else if _, isMap := v.(gm.Filters); isMap {
+				queries = append(queries, p.iterate(v, k)...)
+			} else if _, isMap := v.(*gm.Filters); isMap {
 				queries = append(queries, p.iterate(v, k)...)
 			} else {
 				templateQuery := p.addTemplate(k, queries, v)
