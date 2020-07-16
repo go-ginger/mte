@@ -210,7 +210,7 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 				exists := true
 				if _, ok := opMap[tempValue]; !ok {
 					exists = false
-					opMap[tempValue] = &map[string]interface{}{}
+					opMap[tempValue] = map[string]interface{}{}
 				}
 				p.generateCondition(opMap[tempValue].(map[string]interface{}), k, tempValue, v)
 				if !exists {
