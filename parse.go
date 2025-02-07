@@ -56,7 +56,7 @@ func (p *Parser) setNested(data interface{}, value interface{}, paths ...string)
 	return
 }
 
-func (p *Parser) addTemplate(fieldName string, array []interface{}, value interface{}) (query interface{}) {
+func (p *Parser) addTemplate(fieldName string, array []interface{}, value interface{}) (queries []interface{}) {
 	if qTemplate, ok := p.QueryTemplates[fieldName]; ok {
 		if qTemplate == nil {
 			return
@@ -77,7 +77,7 @@ func (p *Parser) addTemplate(fieldName string, array []interface{}, value interf
 			},
 		})
 	}
-	query = array
+	queries = array
 	return
 }
 
@@ -228,17 +228,17 @@ func (p *Parser) iterate(data interface{}, temp ...string) (queries []interface{
 			} else if _, isMap := v.(*gm.Filters); isMap {
 				queries = append(queries, p.iterate(v, k)...)
 			} else {
-				templateQuery := p.addTemplate(k, queries, v)
-				if templateQuery != nil {
-					queries = append(queries, templateQuery)
+				templateQueries := p.addTemplate(k, queries, v)
+				if templateQueries != nil {
+					queries = templateQueries
 				}
 			}
 		}
 	} else {
 		if tempValue != "" {
-			templateQuery := p.addTemplate(tempValue, queries, data)
-			if templateQuery != nil {
-				queries = append(queries, templateQuery)
+			templateQueries := p.addTemplate(tempValue, queries, data)
+			if templateQueries != nil {
+				queries = templateQueries
 			}
 		}
 	}
